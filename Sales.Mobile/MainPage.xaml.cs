@@ -9,16 +9,37 @@
             InitializeComponent();
         }
 
-        private void OnCounterClicked(object sender, EventArgs e)
+        private void OnCounterIncrement(object sender, EventArgs e)
         {
             count++;
 
             if (count == 1)
-                CounterBtn.Text = $"Clicked {count} time";
+                CounterLbl.Text = $"Clicked {count} time";
             else
-                CounterBtn.Text = $"Clicked {count} times";
+                CounterLbl.Text = $"Clicked {count} times";
 
-            SemanticScreenReader.Announce(CounterBtn.Text);
+            SemanticScreenReader.Announce(IncrementBtn.Text);
+        }
+
+        private void OnCounterDecrement(object sender, EventArgs e)
+        {
+            count--;
+
+            if (count == 1)
+                CounterLbl.Text = $"Clicked {count} time";
+            else
+                CounterLbl.Text = $"Clicked {count} times";
+
+            SemanticScreenReader.Announce(DecrementBtn.Text);
+        }
+
+        private void OnCounterReset(object sender, EventArgs e)
+        {
+            count = 0;
+
+            CounterLbl.Text = $"Clicked {count} times";
+
+            SemanticScreenReader.Announce(ResetBtn.Text);
         }
     }
 }

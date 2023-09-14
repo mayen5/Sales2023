@@ -22,17 +22,39 @@
                 HorizontalOptions="Center" />
 
             <Label
-                Text="Welcome to .NET Multi-platform App UI"
+                Text="Welcome to my First Mobile App"
+                SemanticProperties.HeadingLevel="Level2"
+                SemanticProperties.Description="Welcome to dot net Multi platform App U I"
+                FontSize="18"
+                HorizontalOptions="Center" />
+
+            <Label
+               x:Name="CounterLbl"
+                Text="Clicked 0 times"
                 SemanticProperties.HeadingLevel="Level2"
                 SemanticProperties.Description="Welcome to dot net Multi platform App U I"
                 FontSize="18"
                 HorizontalOptions="Center" />
 
             <Button
-                x:Name="CounterBtn"
-                Text="Click me"
+                x:Name="IncrementBtn"
+                Text="Increment"
                 SemanticProperties.Hint="Counts the number of times you click"
-                Clicked="OnCounterClicked"
+                Clicked="OnCounterIncrement"
+                HorizontalOptions="Center" />
+
+            <Button
+                x:Name="DecrementBtn"
+                Text="Decrement"
+                SemanticProperties.Hint="Counts the number of times you click"
+                Clicked="OnCounterDecrement"
+                HorizontalOptions="Center" />
+
+            <Button
+                x:Name="ResetBtn"
+                Text="Reset"
+                SemanticProperties.Hint="Counts the number of times you click"
+                Clicked="OnCounterReset"
                 HorizontalOptions="Center" />
 
         </VerticalStackLayout>
