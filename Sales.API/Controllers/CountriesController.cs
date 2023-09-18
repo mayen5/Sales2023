@@ -30,6 +30,26 @@ namespace Sales.API.Controllers
             }
         }
 
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult> GetAsync(int id)
+        {
+            try
+            {
+                var country = await _context.Countries.FirstOrDefaultAsync(x => x.Id == id);
+                if (country == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(country);
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost]
         public async Task<ActionResult> PostAsync(Country country)
         {
@@ -47,8 +67,45 @@ namespace Sales.API.Controllers
             }
         }
 
-        
+        [HttpPut]
+        public async Task<ActionResult> PutAsync(Country country)
+        {
+            try
+            {
+                _context.Update(country);
+                await _context.SaveChangesAsync();
+                return Ok(country);
 
-        
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> DeleteAsync(int id)
+        {
+            try
+            {
+                var country = await _context.Countries.FirstOrDefaultAsync(x => x.Id == id);
+                if (country == null)
+                {
+                    return NotFound();
+                }
+
+                _context.Remove(country);
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }
