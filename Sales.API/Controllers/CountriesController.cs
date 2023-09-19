@@ -21,7 +21,26 @@ namespace Sales.API.Controllers
         {
             try
             {
-                return Ok(await _context.Countries.ToListAsync());
+                return Ok(await _context.Countries
+                    .Include(x => x.States)
+                    .ToListAsync());
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("full")]
+        public async Task<ActionResult> GetFullAsync()
+        {
+            try
+            {
+                return Ok(await _context.Countries
+                    .Include(x => x.States!)
+                    .ThenInclude(x => x.Cities)
+                    .ToListAsync());
             }
             catch (Exception ex)
             {
