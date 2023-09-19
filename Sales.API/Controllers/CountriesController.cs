@@ -60,10 +60,19 @@ namespace Sales.API.Controllers
                 return Ok(country);
 
             }
-            catch (Exception ex)
+            catch (DbUpdateException dbUpdateException)
             {
+                if (dbUpdateException.InnerException!.Message.Contains("duplicate"))
+                {
+                    return BadRequest("Ya existe un país con el mismo nombre.");
 
-                return BadRequest(ex.Message);
+                }
+
+                return BadRequest(dbUpdateException.Message);
+            }
+            catch  (Exception exception)
+            { 
+                return BadRequest(exception.Message);
             }
         }
 
@@ -77,10 +86,19 @@ namespace Sales.API.Controllers
                 return Ok(country);
 
             }
-            catch (Exception ex)
+            catch (DbUpdateException dbUpdateException)
             {
+                if (dbUpdateException.InnerException!.Message.Contains("duplicate"))
+                {
+                    return BadRequest("Ya existe un país con el mismo nombre.");
 
-                return BadRequest(ex.Message);
+                }
+
+                return BadRequest(dbUpdateException.Message);
+            }
+            catch (Exception exception)
+            {
+                return BadRequest(exception.Message);
             }
         }
 
