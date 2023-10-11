@@ -1,15 +1,21 @@
 ﻿using Sales.Shared.Entities;
+using Sales.API.Services;
+using Microsoft.EntityFrameworkCore;
+using Sales.Shared.Responses;
 
 namespace Sales.API.Data
 {
     public class SeedDb
     {
         private readonly DataContext _context;
+        private readonly IApiService _apiService;
 
-        public SeedDb(DataContext context)
+        public SeedDb(DataContext context, IApiService apiService)
         {
             _context = context;
+            _apiService = apiService;
         }
+
 
         public async Task SeedAsync()
         {
@@ -21,105 +27,60 @@ namespace Sales.API.Data
         {
             if (!_context.Countries.Any())
             {
-                _context.Countries.Add(new Country
+                Response responseCountries = await _apiService.GetListAsync<CountryResponse>("/v1", "/countries");
+                if (responseCountries.IsSuccess)
                 {
-                    Name = "Guatemala",
-                    States = new List<State>
+                    List<CountryResponse> countries = (List<CountryResponse>)responseCountries.Result!;
+                    foreach (CountryResponse countryResponse in countries)
                     {
-                        new State
+                        Country country = await _context.Countries!.FirstOrDefaultAsync(c => c.Name == countryResponse.Name!)!;
+                        if (country == null)
                         {
-                            Name = "Guatemala",
-                            Cities = new List<City>
+                            country = new() { Name = countryResponse.Name!, States = new List<State>() };
+                            Response responseStates = await _apiService.GetListAsync<StateResponse>("/v1", $"/countries/{countryResponse.Iso2}/states");
+                            if (responseStates.IsSuccess)
                             {
-                                new City { Name = "Ciudad de Guatemala" },
-                                new City { Name = "Fraijanes" },
-                                new City { Name = "San José Pinula" },
-                                new City { Name = "Santa Catarina Pinula" },
-                                new City { Name = "Palencia" },
+                                List<StateResponse> states = (List<StateResponse>)responseStates.Result!;
+                                foreach (StateResponse stateResponse in states!)
+                                {
+                                    State state = country.States!.FirstOrDefault(s => s.Name == stateResponse.Name!)!;
+                                    if (state == null)
+                                    {
+                                        state = new() { Name = stateResponse.Name!, Cities = new List<City>() };
+                                        Response responseCities = await _apiService.GetListAsync<CityResponse>("/v1", $"/countries/{countryResponse.Iso2}/states/{stateResponse.Iso2}/cities");
+                                        if (responseCities.IsSuccess)
+                                        {
+                                            List<CityResponse> cities = (List<CityResponse>)responseCities.Result!;
+                                            foreach (CityResponse cityResponse in cities)
+                                            {
+                                                if (cityResponse.Name == "Mosfellsbær" || cityResponse.Name == "Șăulița")
+                                                {
+                                                    continue;
+                                                }
+                                                City city = state.Cities!.FirstOrDefault(c => c.Name == cityResponse.Name!)!;
+                                                if (city == null)
+                                                {
+                                                    state.Cities.Add(new City() { Name = cityResponse.Name! });
+                                                }
+                                            }
+                                        }
+                                        if (state.CitiesNumber > 0)
+                                        {
+                                            country.States.Add(state);
+                                        }
+                                    }
+                                }
                             }
-                        },
-                        new State
-                        {
-                            Name = "Santa Rosa",
-                            Cities = new List<City>
+                            if (country.StatesNumber > 0)
                             {
-                                new City { Name = "Cuilapa" },
-                                new City { Name = "Barberena" },
-                                new City { Name = "Casillas" },
-                                new City { Name = "Oratorio" },
-                                new City { Name = "Pueblo Nuevo Viñas" },
+                                _context.Countries.Add(country);
+                                await _context.SaveChangesAsync();
                             }
-                        },
-
+                        }
                     }
-                });
-
-                _context.Countries.Add(new Country
-                {
-                    Name = "El Salvador",
-                    States = new List<State>
-                    {
-                        new State
-                        {
-                            Name = "San Salvador",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "San Salvador Norte" },
-                                new City { Name = "San Salvador Oeste" },
-                                new City { Name = "San Salvador Este" },
-                                new City { Name = "San Salvador Centro" },
-                                new City { Name = "San Salvador Sur" },
-                            }
-                        },
-                        new State
-                        {
-                            Name = "San Miguel",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "San Miguel Norte" },
-                                new City { Name = "San Miguel Centro" },
-                                new City { Name = "San Miguel Oeste" },
-                            }
-                        },
-
-                    }
-                });
-
-                _context.Countries.Add(new Country
-                {
-                    Name = "Panamá",
-                    States = new List<State>
-                    {
-                        new State
-                        {
-                            Name = "Panamá",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Balboa" },
-                                new City { Name = "Chepo" },
-                                new City { Name = "Chimán" },
-                                new City { Name = "Panamá" },
-                                new City { Name = "San Miguelito" },
-                                new City { Name = "Taboga" },
-                            }
-                        },
-                        new State
-                        {
-                            Name = "Bocas del Toro",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Almirante" },
-                                new City { Name = "Bocas del Toro" },
-                                new City { Name = "Changuinola" },
-                                new City { Name = "Chiriquí Grande" },
-                            }
-                        },
-
-                    }
-                });
-
-                await _context.SaveChangesAsync();
+                }
             }
         }
     }
 }
+
